@@ -10,6 +10,6 @@ io.on('connection', function(socket){
 	
 });
 
-http.listen(3333, function(){
-	console.log("server IP@3333");
+http.listen(33333, function(){
+	console.log("server IP@33333");
 })
