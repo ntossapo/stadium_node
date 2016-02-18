@@ -3,6 +3,6 @@ var insert = function(db, colName, data, callback){
 	col.insert(data, callback);
 }
 
-module.exports = [
+module.exports = {
 	"insert" : insert,
-]
+};
