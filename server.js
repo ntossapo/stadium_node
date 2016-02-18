@@ -2,14 +2,34 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var MongoClient = require('mongodb').MongoClient
+, assert = require('assert');
 
-io.on('connection', function(socket){
-	socket.on('location', function(msg){
-		console.log(msg);
+var mongo = require('./mongo');
+
+var url = 'mongodb://localhost:27017/stadium';
+var port = 3333;
+
+MongoClient.connect(url, function(err, db){
+	assert.equal(null, err);
+	console.log('	[.]mongodb connected');
+
+	car collection = db.collection('location');
+
+	io.on('connection', function(socket){
+
+		socket.on('location', function(msg){
+			mongo.insert(db, 'location', msg,
+				function(err, result){
+					assert.equal(null, err);
+				});		
+		});
+
 	});
-	
+
+	db.close();
 });
 
-http.listen(33333, function(){
-	console.log("server IP@33333");
-})
+http.listen(port function(){
+	console.log("server at port " + port);
+});
