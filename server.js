@@ -2,30 +2,35 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var MongoClient = require('mongodb').MongoClient
-, assert = require('assert');
+//var MongoClient = require('mongodb').MongoClient
+//, assert = require('assert');
+var mysql = require('mysql');
 
-var mongo = require('./mongo');
+//var mongo = require('./mongo');
+var config = require('./config');
 
-var url = 'mongodb://localhost:27017/stadium';
+//var url = 'mongodb://localhost:27017/stadium';
 var port = 3333;
+var connection = mysql.createConnection(config.mysql);
 
-MongoClient.connect(url, function(err, db){
-	assert.equal(null, err);
-	console.log('	[.]mongodb connected');
+function update(facebookId, lat, lng, callback){
+	connection.query('update user_location set latitude=?, longitude=? where facebook_id=?', [lat, lng, facebookId], callback);
+}
 
-	io.on('connection', function(socket){
+function insert(facebookId, lat, lng, callback){
+	connection.query('insert into user_location(facebook_id, latitude, longitude) values(?, ?, ?)', [facebookId, lat, lng], callback);
+}
 
-		socket.on('location', function(msg){
-			mongo.insert(db, 'location', msg,
-				function(err, result){
-					assert.equal(null, err);
-				});		
+io.on('connection', function(socket){
+	socket.on('location', function(msg){
+		connection.connect();
+		var userLocaiton = JSON.parse(msg);	
+		connection.query('select count(id) from user_location where facebook_id = ?', [userLocation.user], function(err, result){
+			console.log(result);
 		});
 
+		connection.end();		
 	});
-
-	db.close();
 });
 
 http.listen(port, function(){
