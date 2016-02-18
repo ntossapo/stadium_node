@@ -14,8 +14,6 @@ MongoClient.connect(url, function(err, db){
 	assert.equal(null, err);
 	console.log('	[.]mongodb connected');
 
-	car collection = db.collection('location');
-
 	io.on('connection', function(socket){
 
 		socket.on('location', function(msg){
@@ -30,6 +28,6 @@ MongoClient.connect(url, function(err, db){
 	db.close();
 });
 
-http.listen(port function(){
+http.listen(port, function(){
 	console.log("server at port " + port);
 });
