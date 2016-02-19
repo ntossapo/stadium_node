@@ -18,7 +18,7 @@ function update(facebookId, lat, lng, callback){
 }
 
 function insert(facebookId, lat, lng, callback){
-	connection.query('insert into user_location(facebook_id, latitude, longitude) values(?, ?, ?)', [facebookId, lat, lng], callback);
+	connection.query('insert into user_location(facebook_id, latitude, longitude, last_used) values(?, ?, ?, ?)', [facebookId, lat, lng, new Date()], callback);
 }
 
 var callback = function(err, result){
