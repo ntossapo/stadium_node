@@ -15,7 +15,8 @@ var port = 9990;
 
 io.on('connection', function(socket){
 	socket.on('notification_center', function(msg){
-		socket.emit('notification', msg);		
+		var jsonNoti = JSON.parse(msg);
+		socket.emit(jsonNoti.toUser, jsonNoti.data);		
 	});
 });
 
