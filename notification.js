@@ -14,9 +14,12 @@ var port = 9990;
 
 
 io.on('connection', function(socket){
+	console.log('connected');
 	socket.on('notification_center', function(msg){
+		console.log(msg)
 		var jsonNoti = JSON.parse(msg);
-		socket.emit(jsonNoti.toUser, jsonNoti.data);		
+		io.emit(jsonNoti.toUser, msg);
+		console.log(jsonNoti.toUser);		
 	});
 });
 
