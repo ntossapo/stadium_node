@@ -5,7 +5,7 @@ var io = require('socket.io')(http);
 //var MongoClient = require('mongodb').MongoClient
 //, assert = require('assert');
 var mysql = require('mysql');
-
+var moment = require('moment');
 //var mongo = require('./mongo');
 var config = require('./config');
 
@@ -61,6 +61,19 @@ client.once('connect', function(iocSocket){
 						}
 					}
 				});
+
+				isUserCheckin(userLocation, function(err, result){
+					if(result.length != 1){
+						for(var i = 0 ; i < result.length ; i ++) {
+							var userDate = moment(userLocation.date, "YYYY-MM-DD HH:mm:ss");
+							var reserveDate = moment(result[0].date + " " + result[0].time_from, "YYYY-MM-DD HH:mm:ss");
+							var minuteDiff = userDate.diff(reserveDate, 'minute');
+							if (minuteDiff < 30){
+								checkInReserve(result[i].id);
+							}
+						}
+					}
+				});
 			});
 		});
 	});
@@ -71,6 +84,18 @@ function isNearByStadium(userLocation, callback){
 	connection.query("select stadiums.* from stadiums " +
 		"where sqrt(pow(stadiums.latitude - ?, 2) + pow(stadiums.longitude - ?, 2)) < 0.0006 " +
 		"order by sqrt(pow(stadiums.latitude - ?, 2) + pow(stadiums.longitude - ?, 2)) asc", [userLocation.lat, userLocation.lng, userLocation.lat, userLocation.lng], callback);
+}
+
+function isUserCheckin(userLocation, callback){
+	connection.query("select reserves.* from reserves, stadiums, fields" +
+		"where sqlrt(pow(stadiums.latitude - ?, 2) + pow(stadiums.longitude - ?, 2)) < 0.0006 and" +
+		"stadiums.id = fields.stadium_id and" +
+		"fields.id = reserves.fields.id and" +
+		"reserves.isCheckIn = 0", [userLocation.lat, userLocation.lng], callback);
+}
+
+function checkInReserve(reserveId){
+	connection.query("update reserves set isCheckIn = 1 where reserves.id = ?", [reserveId], function(err, result){});
 }
 
 http.listen(port, function(){
