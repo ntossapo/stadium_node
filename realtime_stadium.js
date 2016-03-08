@@ -14,7 +14,10 @@ var port = 9991;
 io.on('connect', function(socket){
     socket.on('bwnproc', function(msg){
         var data = JSON.parse(msg);
-        io.emit(data.stadiumId, data.act);
+	console.log('data in');
+	console.log(data);
+	console.log('send');
+        io.emit("stadium"+data.stadiumId, data.act);
     });
 });
 

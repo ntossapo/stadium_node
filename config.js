@@ -1,8 +1,9 @@
 var mysql = {
 	'hostname':'127.0.0.1',
-	'user':'root',
-	'password':'',
+	'user':'remote',
+	'password':'4128909825',
 	'database':'ssm',
+	'socketPath': '/var/run/mysqld/mysqld.sock'
 }
 
 

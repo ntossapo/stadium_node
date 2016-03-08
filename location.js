@@ -41,20 +41,23 @@ client.once('connect', function(iocSocket){
 					update(userLocation.user, userLocation.lat, userLocation.lng, callback);
 				}
 				isNearByStadium(userLocation, function(err, result){
-					if(result.length != 0) {
+					if(result.length != 0 && status[userLocation.user] == null) {
 						var stadium = [];
 						for (var i = 0; i < result.length; i++) {
-							iocSocket.emit('bwnproc', JSON.stringify({stadiumId: result[i].id, act:"+"}));
+							client.emit('bwnproc', JSON.stringify({stadiumId: result[i].id, act:"+"}));
 							stadium.push(result[i].id);
+							console.log('send bwnproc ' + result[i].id);
 						}
 						status[userLocation.user] = {data:stadium};
-					}else{
+						console.log("user in" + status[userLocation.user].data);
+					}else if(result.length == 0 && status[userLocation.user]!= null){
 						if(status[userLocation.user] != null){
 							var data = status[userLocation.user].data;
 							for(var i = 0 ; i < data.length ; i++){
-								iocSocket.emit('bwnproc', JSON.stringify({stadiumId: result[i].id, act:"-"}));
+								client.emit('bwnproc', JSON.stringify({stadiumId: data[i], act:"-"}));
 							}
 							status[userLocation.user] = null;
+							console.log('user out');
 						}
 					}
 				});
@@ -62,6 +65,7 @@ client.once('connect', function(iocSocket){
 		});
 	});
 });
+
 
 function isNearByStadium(userLocation, callback){
 	connection.query("select stadiums.* from stadiums " +
