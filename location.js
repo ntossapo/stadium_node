@@ -63,13 +63,21 @@ client.once('connect', function(iocSocket){
 				});
 
 				isUserCheckin(userLocation, function(err, result){
-					if(result.length != 1){
+					console.log('[try to checkin]');
+					console.log(result);
+					if(result.length >= 1){
 						for(var i = 0 ; i < result.length ; i ++) {
 							var userDate = moment(userLocation.date, "YYYY-MM-DD HH:mm:ss");
-							var reserveDate = moment(result[0].date + " " + result[0].time_from, "YYYY-MM-DD HH:mm:ss");
+							var reserveDate = moment(result[i].date);
+							var time_from = result[i].time_from.split(":");
+							reserveDate.hour(time_from[0]);
+							reserveDate.minute(time_from[1]);
 							var minuteDiff = userDate.diff(reserveDate, 'minute');
+							console.log(userDate.toString() + " " + reserveDate.toString());
+							//console.log ('minute diff = ' + minuteDiff);
 							if (minuteDiff < 30){
 								checkInReserve(result[i].id);
+								console.log('auto checkin');
 							}
 						}
 					}
@@ -87,11 +95,13 @@ function isNearByStadium(userLocation, callback){
 }
 
 function isUserCheckin(userLocation, callback){
-	connection.query("select reserves.* from reserves, stadiums, fields" +
-		"where sqlrt(pow(stadiums.latitude - ?, 2) + pow(stadiums.longitude - ?, 2)) < 0.0006 and" +
-		"stadiums.id = fields.stadium_id and" +
-		"fields.id = reserves.fields.id and" +
-		"reserves.isCheckIn = 0", [userLocation.lat, userLocation.lng], callback);
+	connection.query("select reserves.* from reserves, stadiums, fields " +
+		"where sqrt(pow(stadiums.latitude - ?, 2) + pow(stadiums.longitude - ?, 2)) < 0.0006 and " +
+		"stadiums.id = fields.stadium_id and " +
+		"fields.id = reserves.field_id and " +
+		"fields.id = reserves.field_id and " +
+		"reserves.isCheckIn = 0 and " + 
+		"reserves.facebook_id = ?", [userLocation.lat, userLocation.lng, userLocation.user], callback);
 }
 
 function checkInReserve(reserveId){
